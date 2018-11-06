@@ -1,0 +1,356 @@
+<!doctype html>
+<html>
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB"
+        crossorigin="anonymous">
+
+    <title>Eth Blockchain Election</title>
+    <meta charset="UTF-8">
+    <script type="text/javascript" src="./lib/bignumber.min.js"></script>
+    <script type="text/javascript" src="./lib/web3-light.js"></script>
+    <script type="text/javascript">
+        var Web3 = require('web3');
+        var web3 = new Web3();
+        web3.setProvider(new web3.providers.HttpProvider("http://127.0.0.1:8545"));//포트번호 수정
+
+        //함수 변경시 ABI 수정
+        
+
+        var vc = web3.eth.contract([{"constant":true,"inputs":[],"name":"alreadyVoted","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[],"name":"killContract","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"num","type":"uint8"}],"name":"voteByNumber","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"name","type":"string"}],"name":"getScoreByName","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"getElectionName","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"num","type":"uint8"}],"name":"getScoreByNum","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"number","type":"uint8"}],"name":"getCandidateString","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"name_","type":"string"}],"name":"addCandidate","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"name","type":"string"}],"name":"voteByName","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"getResult","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"getNumOfCandidates","outputs":[{"name":"","type":"uint8"}],"payable":false,"stateMutability":"view","type":"function"},{"inputs":[{"name":"eleName_","type":"string"},{"name":"endDday_","type":"uint256"}],"payable":false,"stateMutability":"nonpayable","type":"constructor"}]
+        ).at("0x1226b9a9cfc861122c8a56b8b24c8e393fc451d2");
+
+
+        var tablecount=0;
+        function showList() { // 표를 보여주는 메서드
+            var table=document.getElementById("table1");
+            var length = vc.getNumOfCandidates();
+            console.log(length);
+            tablecount=length;
+            for(var i=0;i<length;i++){
+                var candidate = vc.getCandidateString(i);//후보자 이름(string) 가져오기
+                var row=table.insertRow(); //행을 생성
+                var cell1=row.insertCell(0); //행에 셀0(첫번째 셀) 추가
+                var cell2=row.insertCell(1); //행에 셀1(두번째 셀) 추가
+                cell1.innerHTML = candidate; //1번 셀에 후보자이름 넣기
+                cell2.innerHTML = vc.getScoreByName(candidate); //2번 셀에 득표수 넣기
+                
+            }
+            console.log("showList 호출됨");
+        }
+        function refresh() {
+            
+            console.log("refresh 호출됨");
+            var account=document.getElementById("account").value; //사용자의 계정을 가져온다.
+            web3.eth.defaultAccount = account; // 기본 계정을 현재 계정으로 설정한다.
+            //### HTML편집 table 행 삭제 시작 ###
+            var table = document.getElementById('table1');
+            var length_ = vc.getNumOfCandidates();
+            console.log(length_);
+            for (var i =tablecount-1; i>=0; i--) {
+                table.deleteRow(i);
+            }
+            //### HTML편집 table 행 삭제 끝 ###
+            showList();
+        }
+        function vote() { //선거를 하는 매서드
+            var candidate=document.getElementById("candidate").value; // 사용자가 선택한 후보자를 가져온다.
+            var account=document.getElementById("account").value; //사용자의 계정을 가져온다.
+            web3.eth.defaultAccount = account; // 기본 계정을 현재 계정으로 설정한다.
+            if(web3.personal.unlockAccount(account,document.getElementById('pass').value)){// 현재 계좌로 로그인을 진행한다.
+                var alreadyVoted=vc.alreadyVoted();// 투표 여부를 가져온다.
+                console.log(alreadyVoted);//투표여부를 로그로 보기위해 로그로 남긴다.
+                if(alreadyVoted)
+                    alert("이미 투표하셨습니다."); // true면 이미 투표를 한 것이기 때문에 alert로 중지시킨다.
+                else
+                    vc.voteByName(candidate,function(err,result){//투표 하지 않았다면 투표를 진행한다.
+                            if(!err) alert("트랜잭션이 성공적으로 전송되었습니다.|n"+result)
+                            }
+                    );
+            }
+        }
+        function addCand() { //후보자를 추가한다.
+
+            var candidate=document.getElementById("candidate").value; //입력된 후보자를 가져온다.
+            var account=document.getElementById("account").value; //현재 입력된 계정을 가져온다. (관리자 계정이어야 후보자를 추가할 수 있다.)
+            if(web3.personal.unlockAccount(account,document.getElementById('pass').value)){//로그인에 성공하면
+                vc.addCandidate(candidate,{from:account,gas:2000000},function(err,result){//addCandidate를 실행한다.
+                        if(!err) alert("트랜잭션이 성공적으로 전송되었습니다.|n"+result)
+                        });
+            }
+        }
+
+        function getResult() {
+           
+            var account=document.getElementById("account").value; //사용자의 계정을 가져온다.
+            web3.eth.defaultAccount = account;
+            var resulted;
+
+            if(web3.personal.unlockAccount(account,document.getElementById('pass').value)){// 현재 계좌로 로그인을 진행한다.
+                console.log(resulted);
+                vc.getResult(function(err,result){//결과를 가져온다.
+                                if(!err){
+                                    //resulted=""+result; 
+                                    alert(result+"가 당선되었습니다.\n");
+                                }
+                            }
+                );
+               // alert(resulted+"가 당선되었습니다.");               
+            }
+        }
+    </script>
+    <style>
+        html,
+        body {
+            padding: 0%;
+            margin: 0%;
+        }
+
+        header{
+            background-color: black;
+        }
+        .breadcrumb {
+            margin: 0%;
+            background-color: black;
+            padding: 10px 16px;
+            list-style: none;
+            /* 앞부분 부호 제거*/
+        }
+
+        li {
+            display: inline;
+            /* 수평으로 나열*/
+            font-size: 18px;
+        }
+
+        a {
+            color: white;
+            text-decoration: none;
+            /* 테스트 아래부분 라인 표시여부 default-underline*/
+        }
+
+
+        /* Add (|) behind list item */
+        .addsign::before {
+            content: "|";
+            color: white;
+        }
+
+        /* mouse-over시 설정 */
+        a:hover {
+            color: gold;
+            text-decoration: none;
+            /* 테스트 아래부분 라인 표시여부 default-underline*/
+        }
+
+        .tcolor {
+            color: white;
+        }
+
+        .dcolor {
+            background-color: rgb(221, 5, 5);
+            color: white;
+            height: 50px;
+            font-size: 30px;
+        }
+
+        .sborder {
+            border: 1px solid black;
+            margin: 10px 15px;
+
+            widows: 400px;
+            height: 600px;
+        }
+
+        .palign{
+            text-align: center;
+        }
+
+        .falign {
+            text-align: center;
+        }
+	
+		
+
+        table {
+			border-collapse: collapse;
+			border: 4px solid #bbb;
+			width: 50%;
+		}
+
+		tr:nth-child(even) {
+			background-color: #ccc
+		}
+
+		input,
+		select {
+			font-size: 14px;
+			/* 글자크기 */
+			padding: 5px 15px;
+			margin: 4px 0;
+			display: inline-block;
+			border: 1px solid #ccc;
+			border-radius: 3px;
+			box-sizing: border-box;
+		}
+
+		button:hover {
+			background-color: gold;
+			background-color: gold;
+			color: black;
+		}
+
+		button {
+			cursor: pointer;
+			/* 버튼위 마우스모양이 손모양 */
+			color: white;
+			/* 글자 색상은 흰색 */
+			background-color: rgb(0, 132, 255);
+			/* 버튼 배경색상은 파란색*/
+			border: none;
+			/* 변두리가 없음 */
+			text-align: center;
+			/* 글자 정렬 */
+			box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+			/* 그림자  */
+			font-size: 14px;
+			/* 글자크기 */
+			padding: 5px 15px;
+			/* 변두릭와 내용물간 간격*/
+			border-radius: 15px;
+			/* 변두리를 둥글게 */
+		}
+
+		h1 {
+			text-align: center;
+			/* text 가운데 정렬 */
+			letter-spacing: 2px;
+			/* text 글자간 간격 */
+			/* word-spacing: 10px; 단어간 간격 */
+		}
+    </style>
+</head>
+
+<body>
+    <div>
+        <header>
+            <div class="container">
+                <div class="row">
+                    <div class="col">
+                        <ul class="breadcrumb">
+                            <li class="tcolor">
+                                Blockchain Voting System
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col"></div>
+                    <div class="col">
+                        <ul class="breadcrumb">
+                            <li>
+                                <a href="#"> Home &nbsp;</a>
+                            </li>
+                            <li class="addsign">
+                                <a href="#">&nbsp; Login &nbsp;</a>
+                            </li>
+                            <li class="addsign">
+                                <a href="#">&nbsp; Member &nbsp;</a>
+                            </li>
+                            <li class="addsign">
+                                <a href="#">Sitemap &nbsp;</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </header>
+    </div>
+    <div>
+        <section>
+            <div class="container">
+                <div class="row">
+                    <div class="col"></div>
+                    <div class="col">
+                        <div class="row justify-content-center">
+                            <div>
+                                <a href="./180629_vote.html"><img src="./img/logo.jpg"></a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col"></div>
+                </div>
+            </div>
+
+            <div class="contianer">
+                <div class="row">
+                    <div class="col">
+                        <div class="dcolor">
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;<a href="#">ABOUT &nbsp;</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+    <div>
+        <section class="sborder">
+            <div class="row">
+                <div class="col">
+                    계정:
+                    <input type="text" id="account" value="0xeb6572e0a47de6d8e5de53c72e29611b5bbc161f" placeholder="계정명">
+                </div>
+                <div class="col">
+                    패스워드:
+                    <input type="password" id="pass" value="123" placeholder="패스워드">
+                </div>
+            </div>
+            <br/>
+            <div class="row">
+                <div class="col">
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    <input type="text" id="candidate" value="영희" placeholder="후보명">
+                </div>
+                <div class="col">
+                    <button onClick="vote()">투표하기</button>
+                    <button onClick="addCand()">후보 추가하기</button>
+                    <button onClick="refresh()">새로고침</button>
+                    <button onClick="getResult()">결과보기</button>
+                </div>
+            </div>
+            <br/>
+            <div class="row">
+                <div class="col">
+                    <table id="table1"></table>
+                </div>
+                <script>
+                    showList();
+                </script>
+            </div>
+        </section>
+    </div>
+    <div>
+        <footer class="falign">
+            <div class="container">
+                <div class="row">
+                    <div class="col">
+                        copyright&copy 2018 비트고급 2조 ...
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
+        crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js" integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T"
+        crossorigin="anonymous"></script>
+</body>
+
+</html>

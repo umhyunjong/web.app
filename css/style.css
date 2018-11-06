@@ -1,0 +1,146 @@
+html,
+        body {
+            padding: 0%;
+            margin: 0%;
+        }
+
+        header{
+            background-color: black;
+        }
+        #user_header{
+            background-color: #0049BB;
+        }
+        .breadcrumb {
+            margin: 0%;
+            background-color: black;
+            padding: 10px 16px;
+            list-style: none;
+            /* 앞부분 부호 제거*/
+        }
+
+        .breadcrumb_user {
+            margin: 0%;
+            background-color: #0049BB;
+            padding: 10px 16px;
+            list-style: none;
+            /* 앞부분 부호 제거*/
+        }
+
+        li {
+            display: inline;
+            /* 수평으로 나열*/
+            font-size: 18px;
+        }
+
+        a {
+            color: white;
+            text-decoration: none;
+            /* 테스트 아래부분 라인 표시여부 default-underline*/
+        }
+
+
+        /* Add (|) behind list item */
+        .addsign::before {
+            content: "|";
+            color: white;
+        }
+
+        /* mouse-over시 설정 */
+        a:hover {
+            color: gold;
+            text-decoration: none;
+            /* 테스트 아래부분 라인 표시여부 default-underline*/
+        }
+
+        .tcolor {
+            color: white;
+        }
+
+        .dcolor {
+            background-color: rgb(0, 0, 0);
+            color: white;
+            height: 50px;
+            font-size: 30px;
+        }
+
+        .dcolor_user {
+            background-color: #0049BB;
+            color: white;
+            height: 50px;
+            font-size: 30px;
+        }
+
+        .sborder {
+            border: 1px solid black;
+            margin: 10px 15px;
+
+            widows: 400px;
+            
+        }
+
+        .palign{
+            text-align: center;
+        }
+
+        .falign {
+            text-align: center;
+        }
+	
+		
+
+        table {
+			border-collapse: collapse;
+			border: 4px solid #bbb;
+			width: 50%;
+		}
+
+		tr:nth-child(even) {
+			background-color: #ccc
+		}
+
+		input,
+		select {
+			font-size: 14px;
+			/* 글자크기 */
+			padding: 5px 15px;
+			margin: 4px 0;
+			display: inline-block;
+			border: 1px solid #ccc;
+			border-radius: 3px;
+			box-sizing: border-box;
+		}
+
+		button:hover {
+			background-color: gold;
+			background-color: gold;
+			color: black;
+		}
+
+		button {
+			cursor: pointer;
+			/* 버튼위 마우스모양이 손모양 */
+			color: white;
+			/* 글자 색상은 흰색 */
+			background-color: rgb(0, 0, 0);
+			/* 버튼 배경색상은 파란색*/
+			border: none;
+			/* 변두리가 없음 */
+			text-align: center;
+			/* 글자 정렬 */
+			box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+			/* 그림자  */
+			font-size: 14px;
+			/* 글자크기 */
+			padding: 5px 15px;
+			/* 변두릭와 내용물간 간격*/
+			border-radius: 15px;
+			/* 변두리를 둥글게 */
+		}
+
+		h1 {
+			text-align: center;
+			/* text 가운데 정렬 */
+			letter-spacing: 2px;
+			/* text 글자간 간격 */
+			/* word-spacing: 10px; 단어간 간격 */
+		}
